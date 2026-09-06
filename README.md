@@ -17,13 +17,13 @@ Rather than focusing only on individual molecular features that change between c
 The package can be installed directly from GitHub:
 
 ```bash
-pip install git+https://github.com/<your-username>/PyMultiDEGGs.git
+pip install git+https://github.com/cate-messina/PyMultiDEGGs.git
 ```
 
 Alternatively, clone the repository and install it locally:
 
 ```bash
-git clone https://github.com/<your-username>/PyMultiDEGGs.git
+git clone https://github.com/cate-messina/PyMultiDEGGs.git
 cd PyMultiDEGGs
 pip install .
 ```
@@ -114,16 +114,7 @@ PyMultiDEGGs automatically detects whether the input contains a single omic laye
 
 ## Main Analysis Function
 
-The main entry point of PyMultiDEGGs is:
-
-```python
-analysis = md.run_multideggs(
-    assayData=assayData,
-    metadata=metadata,
-    category_variable="response",
-    sig_threshold=0.05,
-)
-```
+The analysis can be customized using the following parameters:
 
 ### Parameters
 
@@ -184,32 +175,38 @@ analysis = md.run_multideggs(
 
 ### OmniPath Archive Versions
 
-A specific OmniPath archive version can be selected using the `archive_version` parameter:
+PyMultiDEGGs uses **OmniPath** as its source of molecular interaction information.
 
-```python
-analysis = md.run_multideggs(
-    assayData=assayData,
-    metadata=metadata,
-    category_variable="response",
-    organism=9606,
-    archive_version="20250601",
-)
+The package includes an **OmniPath archive build** as a bundled human interaction network, available offline. Its metadata are stored in a JSON file containing the archive date, organism, and number of edges.
+
+For reproducible analyses, a specific OmniPath archive build can be selected using `archive_version`. Available builds can be found in the [OmniPath Archive](https://archive.omnipathdb.org/).
+
+Look for files starting with:
+
+```text
+omnipath_webservice_interactions__
 ```
 
-If `archive_version=None`, PyMultiDEGGs uses the cached or bundled interaction network.
+The complete filename has the form:
 
-The interaction data retrieved from OmniPath provide information about properties such as interaction type, directionality, regulatory effect, literature support, and curation.
+```text
+omnipath_webservice_interactions__20230728-20250813.tsv.xz
+```
 
-> **Note:** OmniPath archive schemas have changed over time. Older archive versions may not contain fields introduced in later versions, such as `consensus_direction`, `consensus_stimulation`, `consensus_inhibition`, and `curation_effort`. In these cases, the corresponding columns are **absent from the network data** rather than being populated with missing values.
-
-The interaction network can also be explicitly updated using:
+Use only the portion between `__` and `.tsv.xz` as `archive_version`:
 
 ```python
 md.update_network(
     organism=9606,
-    archive_version="20250601",
+    archive_version="20230728-20250813",
 )
 ```
+
+The two dates (`YYYYMMDD-YYYYMMDD`) indicate the period covered by that archive build. Choose the build whose date range contains the date of the version you want to reproduce.
+
+> **Note 1:** `_latest.tsv.gz` files and `legacy-*` directories should be ignored. Older archive versions may also lack fields introduced in later versions, such as `consensus_direction`, `consensus_stimulation`, `consensus_inhibition`, and `curation_effort`.
+>
+> **Note 2:** Archive builds contain human data only (`organism=9606`). Specifying `archive_version` together with a non-default organism will trigger a warning, as archived data are human-only.
 
 ---
 
@@ -233,30 +230,28 @@ For multi-omic analyses, the results also retain information about the correspon
 
 ### Final Results Table
 
-The final output combines the statistical results of the differential analysis with interaction-level annotations obtained from OmniPath.
+The final output combines the results of the differential network analysis with annotations describing the corresponding interactions.
 
-| Column                  | Description                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| `category`              | Sample category associated with the differential interaction.                    |
-| `from`                  | Source entity of the interaction.                                                |
-| `to`                    | Target entity of the interaction.                                                |
-| `interaction_type`      | Type or category of the interaction represented in the network.                  |
-| `n_references`          | Number of distinct literature references associated with the interaction.        |
-| `curation_effort`       | Number of unique database–citation pairs supporting the interaction in OmniPath. |
-| `is_stimulation`        | Indicates whether the interaction is annotated as stimulatory.                   |
-| `consensus_stimulation` | Consensus annotation regarding stimulation.                                      |
-| `is_inhibition`         | Indicates whether the interaction is annotated as inhibitory.                    |
-| `consensus_inhibition`  | Consensus annotation regarding inhibition.                                       |
-| `is_directed`           | Indicates whether the interaction is directed from the source to the target.     |
-| `consensus_direction`   | Consensus information regarding the directionality of the interaction.           |
-| `PMDI_interaction`      | Representation or identifier of the interaction used by PyMultiDEGGs.            |
-| `p.value`               | P-value from the statistical test for differential association.                  |
-| `p.adj`                 | P-value adjusted for multiple testing.                                           |
-| `layer`                 | Omic layer associated with the interaction.                                      |
-| `url_from`              | NCBI Gene URL associated with the source entity.                                 |
-| `url_to`                | NCBI Gene URL associated with the target entity.                                 |
-
-The OmniPath-derived fields describe properties of the underlying biological interactions, whereas `p.value`, `p.adj`, `category`, and `layer` describe the PyMultiDEGGs analysis.
+| Column                  | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `category`              | Sample group in which the differential interaction was identified.                                    |
+| `from`                  | Gene at the source of the interaction.                                                                |
+| `to`                    | Gene at the target of the interaction.                                                                |
+| `interaction_type`      | Biological type of interaction between the two genes, as annotated by OmniPath.                       |
+| `n_references`          | Total number of PubMed reference entries associated with the interaction.                             |
+| `curation_effort`       | Aggregated curation effort across OmniPath records for the interaction.                               |
+| `is_stimulation`        | Indicates whether the interaction is annotated as a stimulation.                                      |
+| `consensus_stimulation` | Indicates whether there is consensus among the available sources that the interaction is stimulatory. |
+| `is_inhibition`         | Indicates whether the interaction is annotated as an inhibition.                                      |
+| `consensus_inhibition`  | Indicates whether there is consensus among the available sources that the interaction is inhibitory.  |
+| `is_directed`           | Indicates whether the interaction has a defined direction from `from` to `to`.                        |
+| `consensus_direction`   | Indicates whether there is consensus among the available sources about the interaction direction.     |
+| `PMDI_interaction`      | PubMed identifiers associated with the interaction.                                                   |
+| `p.value`               | P-value measuring the statistical significance of the differential interaction.                       |
+| `p.adj`                 | Multiple-testing adjusted p-value used to assess significance.                                        |
+| `layer`                 | Omic dataset in which the interaction was identified.                                                 |
+| `url_from`              | NCBI Gene link for the source gene.                                                                   |
+| `url_to`                | NCBI Gene link for the target gene.                                                                   |
 
 ---
 
@@ -328,23 +323,6 @@ The resulting differential network analyses were compared to assess consistency 
 
 ---
 
-## Project Structure
-
-```text
-PyMultiDEGGs/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-├── examples/
-├── tests/
-└── src/
-    └── multideggs/
-        ├── __init__.py
-        ├── ...
-        └── data/
-```
-
----
 
 ## Citation
 
@@ -362,7 +340,6 @@ https://doi.org/10.34133/csbj.0001
 
 The Python implementation is based on the original multiDEGGs R package.
 
-A citation for the Python implementation will be added once the repository is publicly released.
 
 ---
 
