@@ -1,0 +1,11 @@
+site_name: MultiDEGGs Documentation
+
+theme:
+  name: material
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - python

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyMultiDEGGs"
+version = "0.1.0"
+description = "Differential network analysis for multi-omics data"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=1.5.0",
+    "numpy>=1.20.0",
+    "statsmodels>=0.13.0",
+    "joblib>=1.1.0",
+    "requests>=2.28.0",
+    "beautifulsoup4>=4.11.0",
+    "matplotlib>=3.5.0",
+    "plotly>=5.10.0",
+    "pyvis>=0.3.0",
+    "ipython>=8.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/cate-messina/PyMultiDEGGs"
+Repository = "https://github.com/cate-messina/PyMultiDEGGs"
+Issues = "https://github.com/cate-messina/PyMultiDEGGs/issues"
+
+[project.optional-dependencies]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[tool.setuptools]
+package-dir = {"multideggs" = "python"}
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools.package-data]
+"multideggs.data" = ["*.csv", "*.json"]
