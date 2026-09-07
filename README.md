@@ -224,7 +224,8 @@ results, final_outputs = analysis
 
 ### `final_outputs`
 
-`final_outputs` contains the significant differential interactions selected using the specified adjusted p-value threshold.
+`final_outputs` contains the significant differential interactions in a display-friendly table.
+![Compact final results table](docs/images/compact_results_table.png)
 
 For multi-omic analyses, the results also retain information about the corresponding omic layer.
 
@@ -267,6 +268,7 @@ md.show_plot(
     plot_type="summary",
 )
 ```
+![Summary plot](docs/images/summary_plot.png)
 
 ### Differential Network
 
@@ -290,6 +292,7 @@ md.show_plot(
     genes=["TNF", "TNFRSF1A"],
 )
 ```
+![Differential network](docs/images/differential_network.png)
 
 ### Regression Plot
 
@@ -304,14 +307,16 @@ md.show_plot(
     assayDataName="Proteomics",
 )
 ```
+![Regression plot](docs/images/regression_plot.png)
 
-### Interactive HTML Results
+### HTML Results
 
 Interactive results can be generated with:
 
 ```python
 md.show_html_results(analysis)
 ```
+![HTML results](docs/images/html_results_table.png)
 
 ---
 
